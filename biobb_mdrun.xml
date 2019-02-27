@@ -1,0 +1,96 @@
+<tool id="biobb_mdrun" name="Mdrun" version="0.1.5" >
+    <description>: performs molecular dynamics simulations from an input Gromacs TPR file. </description>
+    <requirements>
+        <requirement type="binary">docker</requirement>
+    </requirements>
+   <command detect_errors="aggressive">
+   ln -f -s ${inputname} ${inputname}.${inputname.ext};
+    #if $config.sele == "option1":
+	ln -s -f ${config.properties} ${config.properties}.${config.properties.ext};
+    #end if
+    docker run -v $__root_dir__/database/files:$__root_dir__/database/files quay.io/biocontainers/biobb_md:0.1.5--py_0 mdrun --input_tpr_path $inputname.${inputname.ext} 
+    #if $config.sele == "option1":
+	--config ${config.properties}.${config.properties.ext}
+    #else if $config.sele == "option2":
+	--config ${config.jsonstr}
+    #end if
+    --output_log_path $__root_dir__/database/files/000/$outname_log
+    --output_gro_path $__root_dir__/database/files/000/$outname
+    --output_trr_path $__root_dir__/database/files/000/$outname_trr
+    --output_edr_path $__root_dir__/database/files/000//$outname_edr
+    --output_xtc_path $__root_dir__/database/files/000/$outname_xtc
+    --output_cpt_path $__root_dir__/database/files/000/$outname_cpt;
+    #if $config.sele == "option1":
+	rm -f ${config.properties}.${config.properties.ext};
+    #end if
+rm -f ${inputname}.${inputname.ext};
+mv  $__root_dir__/database/files/000/$outname $output;
+mv  $__root_dir__/database/files/000/$outname_trr $output_trr;
+mv  $__root_dir__/database/files/000//$outname_edr $output_edr;
+mv  $__root_dir__/database/files/000/$outname_xtc $output_xtc;
+mv  $__root_dir__/database/files/000/$outname_cpt $output_cpt;
+mv  $__root_dir__/database/files/000/$outname_log $output_log
+    </command>
+    <inputs>
+       <param name="inputname" type="data" format="tpr"  label="TPR file" help="Select your portable binary run input file. Format: [input].tpr"/> 
+       <param name="outname" type="text" value="mdrun.gro" label="Output GRO name" help="Name for the Output GROMACS structure. Format: [output].gro "/>
+       <param name="outname_trr" type="text" value="mdrun.trr" label="Output TRR name" help="Name for the Output GROMACS uncompressed raw. Format: [output].trr"/> 
+       <param name="outname_edr" type="text" value="mdrun.edr" label="Output EDR name" help="Name for the Output GROMACS portable energy file. Format: [output].edr"/>
+       <param name="outname_xtc" type="text" value="mdrun.xtc" optional="True" label="Output XTC name" help="Name for the Output GROMACS compressed trajectory file. Format: [output].xtc"/>
+       <param name="outname_cpt" type="text" value="mdrun.cpt" optional="True" label="Output CPT name" help="Name for the Output GROMACS checkpoint file. Format: [output].cpt"/>
+       <param name="outname_log" type="text" value="mdrun.log" label="Output LOG name" help="Name for the Output GROMACS trajectory file. Format: [output].log"/>
+        <conditional name="config">
+	    <param name="sele" type="select" label="Take tool settings:" help="Select where tool settings are to be read from">
+	        <option value="option1">from configuration file</option>
+	        <option value="option2">from JSON string</option>
+                <option value="option3" selected="true">by default</option>
+	    </param>
+	    <when value="option1">
+	        <param name="properties" type="data" format="yml,json" optional="false" label="Configuration file" help="File containing tool settings. See below for the syntax"/>
+	    </when>
+	    <when value="option2">
+	        <param name="jsonstr" type="text" value="{}" optional="false" label="JSON string" help="JSON string containing tool settings. See below for the syntax"/>
+	    </when>
+	    <when value="option3">
+	    </when>
+       </conditional>
+    </inputs>
+    <outputs>
+   	<data name="output" format="gro" label="${outname}"/>
+        <data name="output_trr" format="trr" label="${outname_trr}"/>
+        <data name="output_edr" format="edr" label="${outname_edr}"/>
+        <data name="output_xtc" format="xtc" label="${outname_xtc}"/>
+        <data name="output_cpt" format="cpt" label="${outname_cpt}"/>
+        <data name="output_log" format="log" label="${outname_log}"/>
+    </outputs>
+    <tests>
+        <test>
+        </test>
+    </tests>
+    <help>
+.. class:: warningmark
+
+
+Check the syntax for setting the tool parameters at the original library documentation: https://biobb-md.readthedocs.io/en/latest/gromacs.html#module-gromacs.mdrun
+
+-----
+
+.. image:: ${static_path}/images/biobb.png
+    :height: 57
+    :width: 150
+
+
+**https://bioexcel.eu**
+   </help>
+   <citations>
+        <citation type="bibtex">
+@misc{githubbiobb,
+  author = {Andrio P, Hospital A, Gelpi JL},
+  year = {2019},
+  title = {biobb: BioExcel building blocks },
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/bioexcel/biobb_io},
+}</citation>
+ </citations>
+</tool>

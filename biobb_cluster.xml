@@ -1,0 +1,80 @@
+<tool id="biobb_cluster" name="Cluster" version="0.1.3">
+    <description>: creates cluster structures from a given input trajectory. </description>
+   <requirements>
+        <requirement type="binary">docker</requirement>
+    </requirements>
+ <command detect_errors="aggressive">
+   ln -f -s ${inputname} ${inputname}.${inputname.ext};
+   ln -f -s ${inputtraj} ${inputtraj}.${inputtraj.ext};
+    #if $config.sele == "option1":
+	ln -s -f ${config.properties} ${config.properties}.${config.properties.ext};
+    #end if
+    docker run -v $__root_dir__/database/files:$__root_dir__/database/files  mmbirb/biobb_analysis:0.1.3 cluster --input_gro_path $inputname.${inputname.ext} --input_traj_path  ${inputtraj}.${inputtraj.ext}
+    #if $config.sele == "option1":
+	--config ${config.properties}.${config.properties.ext}
+    #else if $config.sele == "option2":
+	--config ${config.jsonstr}
+    #end if
+    --output_pdb_path $__root_dir__/database/files/000/$outname;
+       #if $config.sele == "option1":
+	rm -f ${config.properties}.${config.properties.ext};
+    #end if
+    rm -f ${inputname}.${inputname.ext} ${inputtraj}.${inputtraj.ext};
+    mv  $__root_dir__/database/files/000/$outname $output
+    </command>
+    <inputs>
+       <param name="outname" type="text" value="myCluster.pdb" label="Output PDB name" help="Name for the Output PDB. Format: [output].pdb "/>
+       <param name="inputname" type="data" format="gro"  label="Structure file" help="Select your GROMACS structure file. Format: [input].gro"/>
+       <param name="inputtraj" type="data" format="trr,xtc"  label="Trajectory file" help="Select your input GROMACS trajectory file. Format: [input].trr or [input].xtc"/>
+        <conditional name="config">
+	    <param name="sele" type="select" label="Take tool settings:" help="Select where tool settings are to be read from">
+	        <option value="option1">from configuration file</option>
+	        <option value="option2">from JSON string</option>
+                <option value="option3" selected="true">by default</option>
+	    </param>
+	    <when value="option1">
+	        <param name="properties" type="data" format="yml,json" optional="false" label="Configuration file" help="File containing tool settings. See below for the syntax"/>
+	    </when>
+	    <when value="option2">
+	        <param name="jsonstr" type="text" value="{}" optional="false" label="JSON string" help="JSON string containing tool settings. See below for the syntax"/>
+	    </when>
+	    <when value="option3">
+	    </when>
+       
+	</conditional>
+    </inputs>
+    <outputs>
+   	<data name="output" format="pdb" label="${outname}"/>
+        
+    </outputs>
+    <tests>
+        <test>
+        </test>
+    </tests>
+    <help>
+.. class:: warningmark
+
+
+Check the syntax for setting the tool parameters at the original library documentation: https://biobb-analysis.readthedocs.io/en/latest/gromacs.html#module-gromacs.cluster 
+
+-----
+
+.. image:: ${static_path}/images/biobb.png
+    :height: 57
+    :width: 150
+
+
+**https://bioexcel.eu**
+   </help>
+   <citations>
+        <citation type="bibtex">
+@misc{githubbiobb,
+  author = {Andrio P, Hospital A, Gelpi JL},
+  year = {2019},
+  title = {biobb: BioExcel building blocks },
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/bioexcel/biobb_io},
+}</citation>
+ </citations>
+</tool>

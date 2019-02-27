@@ -1,0 +1,83 @@
+<tool id="biobb_solvate" name="Solvate" version="0.1.5">
+    <description>: creates a  Gromacs topology file adding solvent molecules to a given input. </description>
+    <requirements>
+        <requirement type="binary">docker</requirement>
+    </requirements> 
+   <command detect_errors="aggressive">
+   ln -f -s ${inputname} ${inputname}.${inputname.ext};
+   ln -f -s ${inputzip} ${inputzip}.${inputzip.ext};
+    #if $config.sele == "option1":
+	ln -s -f ${config.properties} ${config.properties}.${config.properties.ext};
+    #end if
+    docker run -v $__root_dir__/database/files:$__root_dir__/database/files quay.io/biocontainers/biobb_md:0.1.5--py_0 solvate --input_solute_gro_path $inputname.${inputname.ext} --input_top_zip_path  ${inputzip}.${inputzip.ext}
+    #if $config.sele == "option1":
+	--config ${config.properties}.${config.properties.ext}
+    #else if $config.sele == "option2":
+	--config ${config.jsonstr}
+    #end if
+    --output_gro_path $__root_dir__/database/files/000/$outname
+    --output_top_zip_path $outputzip;
+    #if $config.sele == "option1":
+	rm -f ${config.properties}.${config.properties.ext};
+    #end if
+    rm -f ${inputname}.${inputname.ext} ${inputzip}.${inputzip.ext};
+    mv  $__root_dir__/database/files/000/$outname $output
+    </command>
+    <inputs>
+       <param name="outname" type="text" value="mySolvate.gro" label="Output GRO name" help="Name for the Output GRO. Format: [output].gro "/>
+       <param name="outnamezip" type="text" value="solvate.zip" label="Output ZIP name" help="Name for the Output topology in ZIP. Format: [output].zip "/>
+       <param name="inputname" type="data" format="gro"  label="Input GRO file" help="Select your input GRO file. Format: [input].gro"/>
+       <param name="inputzip" type="data" format="zip"  label="Topology file" help="Select your input TOP topology ZIP. Format: [input].zip"/>
+        <conditional name="config">
+	    <param name="sele" type="select" label="Take tool settings:" help="Select where tool settings are to be read from">
+	        <option value="option1">from configuration file</option>
+	        <option value="option2">from JSON string</option>
+                <option value="option3" selected="true">by default</option>
+	    </param>
+	    <when value="option1">
+	        <param name="properties" type="data" format="yml,json" optional="false" label="Configuration file" help="File containing tool settings. See below for the syntax"/>
+	    </when>
+	    <when value="option2">
+	        <param name="jsonstr" type="text" value="{}" optional="false" label="JSON string" help="JSON string containing tool settings. See below for the syntax"/>
+	    </when>
+	    <when value="option3">
+	    </when>
+       
+	</conditional>
+    </inputs>
+    <outputs>
+   	<data name="output" format="gro" label="${outname}"/>
+        <data name="outputzip" format="zip" label="${outnamezip}"/>
+
+    </outputs>
+    <tests>
+        <test>
+        </test>
+    </tests>
+    <help>
+.. class:: warningmark
+
+
+Check the syntax for setting the tool parameters at the original library documentation: https://biobb-md.readthedocs.io/en/latest/gromacs.html#module-gromacs.solvate
+
+-----
+
+.. image:: ${static_path}/images/biobb.png
+    :height: 57
+    :width: 150
+
+
+**https://bioexcel.eu**
+   </help>
+   <citations>
+        <citation type="bibtex">
+@misc{githubbiobb,
+  author = {Andrio P, Hospital A, Gelpi JL},
+  year = {2019},
+  title = {biobb: BioExcel building blocks },
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/bioexcel/biobb_io},
+}</citation>
+ </citations>
+</tool>
